@@ -8,6 +8,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
@@ -16,6 +17,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -69,7 +71,7 @@ public class LocationService extends Service {
                     sendBroadcast(intent);
 
                 } catch (IOException e) {
-                    Log.e(TAG, "onLocationResult: "+e.getMessage() );
+                    Log.e(TAG, "onLocationResult: " + e.getMessage());
                 }
 
 
@@ -79,7 +81,6 @@ public class LocationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
 
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
@@ -92,33 +93,29 @@ public class LocationService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
+    @SuppressLint("NewApi")
     private void createNotificationChanel() {
         String notificationChannelId = "Cistron";
         String channelName = "Background Service";
 
         NotificationChannel chan = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            chan = new NotificationChannel(
-                    notificationChannelId,
-                    channelName,
-                    NotificationManager.IMPORTANCE_NONE
-            );
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            chan.setLightColor(Color.BLUE);
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-        }
+
+        chan = new NotificationChannel(
+                notificationChannelId,
+                channelName,
+                NotificationManager.IMPORTANCE_NONE
+        );
+
+        chan.setLightColor(Color.BLUE);
+
+        chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
 
         NotificationManager manager = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            manager = getSystemService(NotificationManager.class);
-        }
+        manager = getSystemService(NotificationManager.class);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            manager.createNotificationChannel(chan);
-        }
+
+        manager.createNotificationChannel(chan);
+
 
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, notificationChannelId);
@@ -132,11 +129,20 @@ public class LocationService extends Service {
     }
 
 
-    @SuppressLint("MissingPermission")
     private void requestLocation() {
         LocationRequest locationRequest = new LocationRequest();
         locationRequest.setInterval(5000);
         locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
     }
 }

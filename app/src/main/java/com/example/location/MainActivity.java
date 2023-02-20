@@ -17,6 +17,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 import android.Manifest;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -24,6 +25,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -38,13 +41,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Marker marker;
     LocationBroadcastReceiver receiver;
 
-
+    Polyline polyline = null;
+    ArrayList<LatLng> latLngArrayList = new ArrayList<>();
+    ArrayList<Marker> markerArrayList = new ArrayList<>();
     ArrayList<LocationList> locationLists = new ArrayList<>();
     String LAt;
     String Long;
     String Address;
-    String filename,filepath;
-
+    String filename, filepath;
 
 
     @Override
@@ -94,6 +98,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+//        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+//            @Override
+//            public void onMapClick(LatLng latLng) {
+//                if (mMap != null) {
+//                    MarkerOptions markerOptions = new MarkerOptions();
+//                    markerOptions.position(latLng);
+//                    if (marker != null)
+//                        marker.setPosition(latLng);
+//                    else
+//                        marker = mMap.addMarker(markerOptions);
+//                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14));
+//                    latLngArrayList.add(latLng);
+//                    markerArrayList.add(marker);
+//                }
+//
+//                PolylineOptions polylineOptions = new PolylineOptions().addAll(latLngArrayList).clickable(true);
+//                polyline = mMap.addPolyline(polylineOptions);
+//            }
+//        });
     }
 
     @Override
@@ -105,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("Location")) {
+                latLngArrayList.clear();
                 double lat = intent.getDoubleExtra("latitude", 0f);
                 double longitude = intent.getDoubleExtra("longitude", 0f);
                 Address = intent.getStringExtra("Address");
@@ -112,35 +136,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Long = String.valueOf(longitude);
                 LocationList locationList = new LocationList(LAt, Long, Address);
                 locationLists.add(locationList);
-
-
-
-                String location = "";
-
-
-                for (int i = 0; i < locationLists.size(); i++) {
-                    location = location + "\n" + "\n" + "Latitude --> " + locationLists.get(i).getLatitude() + "\n" + "Longitude --> " + locationLists.get(i).getLongtitude() + "\n" + "Address --> " + locationLists.get(i).getAddress() + "\n" + "\n" + "***********************************************";
-                }
-                String Heading ="--------------------Location List---------------------"+"\n"+location;
-                    if (!Heading.equals("")) {
-                        File myExternalFile = new File(filepath, filename);
-                        Log.e(TAG, "onClick: " + myExternalFile);
-                        FileOutputStream fos = null;
-                        try {
-                            fos = new FileOutputStream(myExternalFile);
-                            fos.write(Heading.getBytes());
-                            fos.close();
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
-
-                    } else {
-                        Toast.makeText(MainActivity.this, "empty.", Toast.LENGTH_SHORT).show();
-                    }
-
                 if (mMap != null) {
                     LatLng latLng = new LatLng(lat, longitude);
                     MarkerOptions markerOptions = new MarkerOptions();
@@ -150,8 +145,38 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     else
                         marker = mMap.addMarker(markerOptions);
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14));
+                    latLngArrayList.add(latLng);
+                    markerArrayList.add(marker);
                 }
-               // Toast.makeText(MainActivity.this, "Latitude is: " + lat + ", Longitude is " + longitude, Toast.LENGTH_LONG).show();
+
+                PolylineOptions polylineOptions = new PolylineOptions().addAll(latLngArrayList).clickable(true);
+                polyline = mMap.addPolyline(polylineOptions);
+
+                String location = "";
+                for (int i = 0; i < locationLists.size(); i++) {
+                    location = location + "\n" + "\n" + "Latitude --> " + locationLists.get(i).getLatitude() + "\n" + "Longitude --> " + locationLists.get(i).getLongtitude() + "\n" + "Address --> " + locationLists.get(i).getAddress() + "\n" + "\n" + "***********************************************";
+                }
+                String Heading = "--------------------Location List---------------------" + "\n" + location;
+                if (!Heading.equals("")) {
+                    File myExternalFile = new File(filepath, filename);
+                    Log.e(TAG, "onClick: " + myExternalFile);
+                    FileOutputStream fos = null;
+                    try {
+                        fos = new FileOutputStream(myExternalFile);
+                        fos.write(Heading.getBytes());
+                        fos.close();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+
+                } else {
+                    Toast.makeText(MainActivity.this, "empty.", Toast.LENGTH_SHORT).show();
+                }
+
+                // Toast.makeText(MainActivity.this, "Latitude is: " + lat + ", Longitude is " + longitude, Toast.LENGTH_LONG).show();
             }
         }
     }
