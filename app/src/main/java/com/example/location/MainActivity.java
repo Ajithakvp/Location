@@ -5,7 +5,11 @@ import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -49,7 +53,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     String Long;
     String Address;
     String filename, filepath;
+    int Count = 1;
+    int Head = 0;
 
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        startLocService();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +82,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else {
             //Start the Location Service
             startLocService();
+
         }
+
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFrag);
         mapFragment.getMapAsync(MainActivity.this);
     }
@@ -98,31 +112,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-//        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-//            @Override
-//            public void onMapClick(LatLng latLng) {
-//                if (mMap != null) {
-//                    MarkerOptions markerOptions = new MarkerOptions();
-//                    markerOptions.position(latLng);
-//                    if (marker != null)
-//                        marker.setPosition(latLng);
-//                    else
-//                        marker = mMap.addMarker(markerOptions);
-//                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14));
-//                    latLngArrayList.add(latLng);
-//                    markerArrayList.add(marker);
-//                }
-//
-//                PolylineOptions polylineOptions = new PolylineOptions().addAll(latLngArrayList).clickable(true);
-//                polyline = mMap.addPolyline(polylineOptions);
-//            }
-//        });
+
     }
 
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
         super.onPointerCaptureChanged(hasCapture);
     }
+
 
     public class LocationBroadcastReceiver extends BroadcastReceiver {
         @Override
@@ -153,16 +150,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 polyline = mMap.addPolyline(polylineOptions);
 
                 String location = "";
+                Head++;
                 for (int i = 0; i < locationLists.size(); i++) {
-                    location = location + "\n" + "\n" + "Latitude --> " + locationLists.get(i).getLatitude() + "\n" + "Longitude --> " + locationLists.get(i).getLongtitude() + "\n" + "Address --> " + locationLists.get(i).getAddress() + "\n" + "\n" + "***********************************************";
+
+                    location =   location +"\n" + ( Count+i) +")"+ "\n" +   "\n" + "\n" + "Latitude --> " + locationLists.get(i).getLatitude() + "\n" + "Longitude --> " + locationLists.get(i).getLongtitude() + "\n" + "Address --> " + locationLists.get(i).getAddress() + "\n" + "\n" + "***********************************************"+ "\n"  ;
                 }
-                String Heading = "--------------------Location List---------------------" + "\n" + location;
+                String Heading = "------------------- "+Head+" Location List -------------------" + "\n" + location;
                 if (!Heading.equals("")) {
                     File myExternalFile = new File(filepath, filename);
                     Log.e(TAG, "onClick: " + myExternalFile);
-                    FileOutputStream fos = null;
+
                     try {
-                        fos = new FileOutputStream(myExternalFile);
+                        FileOutputStream fos = new FileOutputStream(myExternalFile);
                         fos.write(Heading.getBytes());
                         fos.close();
                     } catch (FileNotFoundException e) {
