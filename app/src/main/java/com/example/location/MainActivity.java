@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,9 +16,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Typeface;
+import android.graphics.pdf.PdfDocument;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.text.TextPaint;
 import android.util.Log;
 import android.widget.Toast;
 import android.Manifest;
@@ -57,6 +63,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     int Head = 0;
 
 
+    // Pdf Creator
+
+    int pageHeight = 1120;
+    int pagewidth = 792;
+
+
     @Override
     protected void onStop() {
         super.onStop();
@@ -70,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         filename = "Location.txt";
         filepath = Environment.getExternalStoragePublicDirectory(DIRECTORY_DOWNLOADS) + "/";
+
 
         receiver = new LocationBroadcastReceiver();
         if (Build.VERSION.SDK_INT >= 23) {
@@ -120,6 +133,69 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onPointerCaptureChanged(hasCapture);
     }
 
+    private void CallPdf() {
+
+//        PdfDocument pdfDocument = new PdfDocument();
+//        for(int i=0;i<10;i++){
+//            PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(100, 100, i).create();
+//            PdfDocument.Page page = pdfDocument.startPage(pageInfo);
+//            Canvas canvas = page.getCanvas();
+//            Paint paint = new Paint();
+//            canvas.drawText("Text : "+i, 10, 10, paint);
+//            canvas.drawText("Text : "+i, 10, 20, paint);
+//            pdfDocument.finishPage(page);
+//        }
+//
+//        File file=new File(filepath,"pdf.pdf");
+//        try {
+//            pdfDocument.writeTo(new FileOutputStream(file));
+//        }catch (Exception e){
+//
+//        }
+
+
+
+//        Head++;
+//        PdfDocument pdfDocument = new PdfDocument();
+//        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(1190, 1684, 1).create();
+//        PdfDocument.Page mypage1 = pdfDocument.startPage(pageInfo);
+//        Canvas canvas = mypage1.getCanvas();
+//
+//        TextPaint mTextPaint=new TextPaint();
+//        mTextPaint.setTextAlign(Paint.Align.CENTER);
+//
+//        String location = "";
+//
+//        for (int i = 0; i < locationLists.size(); i++) {
+//
+//            location = location + "Latitude --> " + locationLists.get(i).getLatitude() + "\n" + "Longitude --> " + locationLists.get(i).getLongtitude() + "\n" + "Address --> " + locationLists.get(i).getAddress();
+//        }
+//
+//
+//        mTextPaint.setTextSize(32f);
+//
+//        int x = 1120, y=300;
+//
+//        for (String line:location.split("\n")){
+//            mypage1.getCanvas().drawText(line, x, y, mTextPaint);
+//            y+=mTextPaint.descent()-mTextPaint.ascent();
+//        }
+//
+//        mTextPaint.setTextAlign(Paint.Align.CENTER);
+//        mTextPaint.setTextSize(32f);
+//        canvas.drawText(location,595,1560,mTextPaint);
+//        pdfDocument.finishPage(mypage1);
+//
+//
+//
+//        File file1 = new File(filepath,"pdf.pdf");
+//        try {
+//            pdfDocument.writeTo(new FileOutputStream(file1));
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
+//        pdfDocument.close();
+     }
 
     public class LocationBroadcastReceiver extends BroadcastReceiver {
         @Override
@@ -149,13 +225,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 PolylineOptions polylineOptions = new PolylineOptions().addAll(latLngArrayList).clickable(true);
                 polyline = mMap.addPolyline(polylineOptions);
 
+                CallPdf();
+
                 String location = "";
                 Head++;
                 for (int i = 0; i < locationLists.size(); i++) {
 
-                    location =   location +"\n" + ( Count+i) +")"+ "\n" +   "\n" + "\n" + "Latitude --> " + locationLists.get(i).getLatitude() + "\n" + "Longitude --> " + locationLists.get(i).getLongtitude() + "\n" + "Address --> " + locationLists.get(i).getAddress() + "\n" + "\n" + "***********************************************"+ "\n"  ;
+                    location = location + "\n" + (Count + i) + ")" + "\n" + "\n" + "\n" + "Latitude --> " + locationLists.get(i).getLatitude() + "\n" + "Longitude --> " + locationLists.get(i).getLongtitude() + "\n" + "Address --> " + locationLists.get(i).getAddress() + "\n" + "\n" + "***********************************************" + "\n";
                 }
-                String Heading = "------------------- "+Head+" Location List -------------------" + "\n" + location;
+                String Heading = "------------------- " + Head + " Location List -------------------" + "\n" + location;
                 if (!Heading.equals("")) {
                     File myExternalFile = new File(filepath, filename);
                     Log.e(TAG, "onClick: " + myExternalFile);
